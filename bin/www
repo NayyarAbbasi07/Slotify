@@ -1,0 +1,78 @@
+#!/usr/bin/env node
+'use strict';
+
+const http = require('http');
+const app = require('../app');
+const config = require('../config.json');
+const { initSocket } = require('../socket');
+const { initCrons } = require('../cron');
+const { connectDatabase, sequelize } = require('../common/databaseConnection');
+const { runMigrations } = require('../common/migrations');
+const { connectRedis } = require('../common/redis');
+const { assertRequiredSecrets } = require('../common/secrets');
+
+const port = Number(process.env.PORT || config.PORT || 3008);
+app.set('port', port);
+
+async function start() {
+  try {
+    assertRequiredSecrets();
+  } catch (err) {
+    console.error(`[config] ${err.message}`);
+    process.exit(1);
+  }
+
+  let dbReady = false;
+  try {
+    await connectDatabase();
+    dbReady = true;
+  } catch (err) {
+    console.warn('[db] Connection skipped/failed at boot:', err.message);
+    console.warn('[db] API will start; endpoints that need DB will fail until Postgres is up.');
+  }
+
+  if (dbReady) {
+    try {
+      await runMigrations(sequelize);
+    } catch (err) {
+      // A failed migration (e.g. the double-booking guard) must never be skipped silently.
+      console.error('[db] migrations failed, refusing to start:', err.message);
+      process.exit(1);
+    }
+  }
+
+  try {
+    await connectRedis();
+    console.log('[redis] connected');
+  } catch (err) {
+    console.warn('[redis] not reachable at boot:', err.message);
+    console.warn('[redis] OTP endpoints return 503 until Redis is up.');
+  }
+
+  const server = http.createServer(app);
+  initSocket(server);
+
+  const role = process.env.PROCESS_ROLE || 'all';
+  if (role === 'all' || role === 'api') {
+    // API process
+  }
+  if (role === 'all') {
+    initCrons();
+  }
+
+  server.listen(port, () => {
+    console.log(`[${config.appName}] listening on http://localhost:${port}`);
+    console.log(`[${config.appName}] swagger  http://localhost:${port}/api-docs`);
+  });
+
+  server.on('error', (error) => {
+    if (error.syscall !== 'listen') throw error;
+    if (error.code === 'EADDRINUSE') {
+      console.error(`Port ${port} is already in use`);
+      process.exit(1);
+    }
+    throw error;
+  });
+}
+
+start();

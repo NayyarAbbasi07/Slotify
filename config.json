@@ -1,0 +1,39 @@
+{
+  "PORT": 3008,
+  "appName": "Slotify",
+  "timezone": "Asia/Karachi",
+  "currency": "PKR",
+  "db": {
+    "dialect": "postgres",
+    "host": "127.0.0.1",
+    "port": 5432,
+    "database": "slotify",
+    "username": "postgres",
+    "logging": false,
+    "sync": true
+  },
+  "google": {
+    "clientId": ""
+  },
+  "jwt": {
+    "accessExpiresIn": "15m",
+    "refreshExpiresIn": "30d"
+  },
+  "redis": {
+    "host": "127.0.0.1",
+    "port": 6379
+  },
+  "cors": {
+    "origins": ["http://localhost:3000", "http://localhost:8081"]
+  },
+  "uploads": {
+    "maxImageMb": 10,
+    "maxVideoMb": 50
+  },
+  "otp": {
+    "length": 6,
+    "ttlSeconds": 300,
+    "maxAttempts": 5,
+    "maxSendsPer15Min": 3
+  }
+}

@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+'use strict';
+
+require('dotenv').config();
+
+const { connectDatabase } = require('../common/databaseConnection');
+const { assertRequiredSecrets } = require('../common/secrets');
+const { initCrons } = require('../cron');
+const config = require('../config.json');
+
+async function start() {
+  assertRequiredSecrets();
+  await connectDatabase();
+  initCrons();
+  console.log(`[${config.appName}] worker started (PROCESS_ROLE=worker)`);
+}
+
+start().catch((err) => {
+  console.error('[worker] failed to start:', err);
+  process.exit(1);
+});

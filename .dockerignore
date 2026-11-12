@@ -1,0 +1,28 @@
+# Keep secrets, local data, and dev-only files out of the image.
+# The API reads its secrets from runtime environment variables, not from files in the image.
+
+.env
+.env.*
+!.env.example
+config.local.json
+
+node_modules
+npm-debug.log*
+
+*.log
+
+.git
+.gitignore
+.dockerignore
+.vscode
+.idea
+.DS_Store
+
+scratch
+docs
+seeders
+uploads
+assets/uploads
+*.md
+Dockerfile
+docker-compose.yml

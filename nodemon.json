@@ -1,0 +1,19 @@
+{
+  "watch": [
+    "app.js",
+    "bin",
+    "common",
+    "controllers",
+    "routes",
+    "service",
+    "models",
+    "socket",
+    "cron",
+    "utils",
+    "swagger",
+    "config.json"
+  ],
+  "ext": "js,json",
+  "ignore": ["node_modules", "uploads", "assets/uploads", "scratch"],
+  "exec": "node ./bin/www"
+}
